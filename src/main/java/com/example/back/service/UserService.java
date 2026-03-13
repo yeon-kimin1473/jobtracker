@@ -1,6 +1,8 @@
 package com.example.back.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,15 +36,21 @@ public class UserService {
     }
 
     // Login
-    public String loginUser(String email, String password) {
+    public Map<String, Object> loginUser(String email, String password) {
+        Map<String, Object> response = new HashMap<>();
         Optional<User> user = userRepository.findByEmail(email);
         if (user.isEmpty()) {
-            return "User not found";
+            response.put("message", "User not found");
+            return response;
         }
         if (!passwordEncoder.matches(password, user.get().getPassword())) {
-            return "Invalid password";
+            response.put("message", "Invalid password");
+            return response;
         }
-        return "Login successful";
+        response.put("message", "Login successful");
+        response.put("userId", user.get().getId());
+        response.put("username", user.get().getUsername());
+        return response;
     }
 
     // Get all users
