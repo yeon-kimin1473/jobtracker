@@ -1,11 +1,11 @@
 package com.example.back.service;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.util.Map;
-import java.util.List;
 
 @Service
 public class AiService {
@@ -17,18 +17,20 @@ public class AiService {
 
     public String predictSuccess(String company, String role, String status, String appliedDate) {
 
-        String prompt = "You are a job application coach. Analyze this job application and predict success:\n" +
+        String prompt = "You are a job application career coach. Analyze this job application and predict if it is a good match:\n" +
                 "Company: " + company + "\n" +
                 "Role: " + role + "\n" +
-                "Status: " + status + "\n" +
+                "Current Status: " + status + "\n" +
                 "Applied Date: " + appliedDate + "\n\n" +
-                "Give a success score out of 100 and 3-4 short bullet points explaining why.\n" +
-                "Format your response exactly like this:\n" +
-                "Score: [number]/100\n" +
+                "Give a match score out of 100 and 3-4 short bullet points.\n" +
+                "End with a one line verdict.\n" +
+                "Format your response EXACTLY like this:\n" +
+                "Match Score: [number]/100\n" +
                 "- [reason 1]\n" +
                 "- [reason 2]\n" +
                 "- [reason 3]\n" +
-                "- [reason 4]";
+                "- [reason 4]\n" +
+                "Verdict: [one line verdict]";
 
         Map<String, Object> requestBody = Map.of(
             "contents", List.of(
@@ -56,7 +58,7 @@ public class AiService {
             Map part = (Map) parts.get(0);
             return (String) part.get("text");
         } catch (Exception e) {
-            return "Score: 50/100\n- Could not analyze at this time. Please try again.";
+            return "Match Score: 50/100\n- Could not analyze at this time.\nVerdict: Please try again.";
         }
     }
 }
