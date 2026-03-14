@@ -1,64 +1,68 @@
 package com.example.back.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class AiService {
 
-    @Value("${gemini.api.key}")
+    @Value("${HUGGINGFACE_API_KEY}")
     private String apiKey;
 
-    private final WebClient webClient = WebClient.create();
+    private final RestTemplate restTemplate = new RestTemplate();
 
-    public String predictSuccess(String company, String role, String status, String appliedDate) {
+    public String predictSuccess(String company, String role, String jobDescription) {
 
-        String prompt = "You are a job application career coach. Analyze this job application and predict if it is a good match:\n" +
+        String prompt = "You are a career coach. Analyze this job application:\n\n" +
                 "Company: " + company + "\n" +
-                "Role: " + role + "\n" +
-                "Current Status: " + status + "\n" +
-                "Applied Date: " + appliedDate + "\n\n" +
-                "Give a match score out of 100 and 3-4 short bullet points.\n" +
-                "End with a one line verdict.\n" +
-                "Format your response EXACTLY like this:\n" +
+                "Role: " + role + "\n\n" +
+                "Job Description:\n" + jobDescription + "\n\n" +
+                "Give a match score out of 100 and 3-4 bullet points.\n" +
+                "Format EXACTLY like this:\n" +
                 "Match Score: [number]/100\n" +
                 "- [reason 1]\n" +
                 "- [reason 2]\n" +
                 "- [reason 3]\n" +
-                "- [reason 4]\n" +
                 "Verdict: [one line verdict]";
 
-        Map<String, Object> requestBody = Map.of(
-            "contents", List.of(
-                Map.of("parts", List.of(
-                    Map.of("text", prompt)
-                ))
-            )
-        );
+        String url = "https://router.huggingface.co/v1/chat/completions";
 
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey;
+        Map<String, Object> body = new HashMap<>();
+        body.put("model", "meta-llama/Llama-3.1-8B-Instruct");
+        body.put("temperature", 0);
 
-        Map response = webClient.post()
-                .uri(url)
-                .header("Content-Type", "application/json")
-                .bodyValue(requestBody)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+        List<Map<String, String>> messages = new ArrayList<>();
+        Map<String, String> userMessage = new HashMap<>();
+        userMessage.put("role", "user");
+        userMessage.put("content", prompt);
+        messages.add(userMessage);
+        body.put("messages", messages);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         try {
-            List candidates = (List) response.get("candidates");
-            Map candidate = (Map) candidates.get(0);
-            Map content = (Map) candidate.get("content");
-            List parts = (List) content.get("parts");
-            Map part = (Map) parts.get(0);
-            return (String) part.get("text");
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+            Map responseBody = response.getBody();
+            List choices = (List) responseBody.get("choices");
+            Map firstChoice = (Map) choices.get(0);
+            Map message = (Map) firstChoice.get("message");
+            return message.get("content").toString().trim();
         } catch (Exception e) {
-            return "Match Score: 50/100\n- Could not analyze at this time.\nVerdict: Please try again.";
+            return "Match Score: 0/100\n- Error: " + e.getMessage() + "\nVerdict: Could not analyze.";
         }
     }
 }

@@ -1,10 +1,15 @@
 package com.example.back.controller;
 
-import com.example.back.service.AiService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.back.service.AiService;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -18,10 +23,8 @@ public class AiController {
     public Map<String, String> predict(@RequestBody Map<String, String> jobDetails) {
         String company = jobDetails.get("company");
         String role = jobDetails.get("role");
-        String status = jobDetails.get("status");
-        String appliedDate = jobDetails.get("appliedDate");
-
-        String result = aiService.predictSuccess(company, role, status, appliedDate);
+        String jobDescription = jobDetails.get("jobDescription");
+        String result = aiService.predictSuccess(company, role, jobDescription);
         return Map.of("prediction", result);
     }
 }
