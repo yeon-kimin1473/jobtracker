@@ -21,18 +21,23 @@ public class AiService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public String predictSuccess(String company, String role, String jobDescription) {
+    public String predictSuccess(String company, String role, String jobDescription, String resumeText) {
 
         String prompt = "You are a career coach. Analyze this job application:\n\n" +
                 "Company: " + company + "\n" +
                 "Role: " + role + "\n\n" +
                 "Job Description:\n" + jobDescription + "\n\n" +
-                "Give a match score out of 100 and 3-4 bullet points.\n" +
+                "Candidate Resume:\n" + resumeText + "\n\n" +
+                "Give a match score out of 100, reasons, resume suggestions, and a verdict.\n" +
                 "Format EXACTLY like this:\n" +
                 "Match Score: [number]/100\n" +
                 "- [reason 1]\n" +
                 "- [reason 2]\n" +
                 "- [reason 3]\n" +
+                "Resume Suggestions:\n" +
+                "- [suggestion 1]\n" +
+                "- [suggestion 2]\n" +
+                "- [suggestion 3]\n" +
                 "Verdict: [one line verdict]";
 
         String url = "https://router.huggingface.co/v1/chat/completions";
