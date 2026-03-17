@@ -1,12 +1,7 @@
 package com.example.back.model;
 
+import jakarta.persistence.*;
 import java.time.LocalDate;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "job_applications")
@@ -21,15 +16,19 @@ public class JobApplication {
     private String status;
     private LocalDate appliedDate;
     private Long userId;
+    private LocalDate deadline;
+    private LocalDate followUpDate;
 
     public JobApplication() {}
 
-    public JobApplication(String company, String role, String status, LocalDate appliedDate, Long userId) {
+    public JobApplication(String company, String role, String status, LocalDate appliedDate, Long userId, LocalDate deadline, LocalDate followUpDate) {
         this.company = company;
         this.role = role;
         this.status = status;
         this.appliedDate = appliedDate;
         this.userId = userId;
+        this.deadline = deadline;
+        this.followUpDate = followUpDate;
     }
 
     public Long getId() { return id; }
@@ -48,4 +47,10 @@ public class JobApplication {
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
+
+    public LocalDate getDeadline() { return deadline; }
+    public void setDeadline(LocalDate deadline) { this.deadline = deadline; }
+
+    public LocalDate getFollowUpDate() { return followUpDate; }
+    public void setFollowUpDate(LocalDate followUpDate) { this.followUpDate = followUpDate; }
 }
